@@ -5,18 +5,23 @@ Argentine sneaker marketplace with bid/ask matching, local authentication, and M
 ## Quick Start
 
 ```bash
-# 1. Install dependencies
-pnpm install && cd frontend && pnpm install && cd ../backend && pnpm install
-
-# 2. Configure environment
+# 1. Configure environment
 cp env.template .env
-# Edit .env with Supabase credentials
+# Edit .env with your Supabase credentials
 
-# 3. Start services
+# 2. Start with Docker (handles all dependencies)
 docker-compose up --build
 ```
 
 **Access**: http://localhost:3000
+
+### Local Development (without Docker)
+
+```bash
+pnpm install && cd frontend && pnpm install && cd ../backend && pnpm install
+cd frontend && pnpm dev  # Terminal 1
+cd backend && pnpm dev   # Terminal 2
+```
 
 ## Tech Stack
 
