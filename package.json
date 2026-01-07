@@ -1,0 +1,28 @@
+{
+  "name": "verified-ar",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "docker-compose up",
+    "dev:detached": "docker-compose up -d",
+    "build": "docker-compose build",
+    "down": "docker-compose down",
+    "logs": "docker-compose logs -f",
+    "test:env": "docker-compose -f docker-compose.test.yml up --build",
+    "test:env:down": "docker-compose -f docker-compose.test.yml down -v",
+    "test:db": "node scripts/test-db-connection.js",
+    "test:docker": "bash scripts/test-docker.sh",
+    "test:market": "ts-node scripts/seed-test-market.ts",
+    "test:matching": "ts-node scripts/validate-matching.ts",
+    "test:pricing": "ts-node scripts/validate-pricing.ts",
+    "seed": "node scripts/seed-products.js",
+    "setup": "node scripts/setup-wizard.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "prettier": "^3.1.1"
+  }
+}

@@ -1,0 +1,84 @@
+version: '3.9'
+
+services:
+  # Test-specific PostgreSQL database
+  test-db:
+    image: postgres:15-alpine
+    container_name: verified-test-db
+    environment:
+      - POSTGRES_DB=verified_test
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5433:5432"  # Different port to avoid conflict with dev
+    volumes:
+      - test-db-data:/var/lib/postgresql/data
+      - ./docs/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    networks:
+      - verified-test-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Backend for testing
+  backend-test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: verified-backend-test
+    environment:
+      - NODE_ENV=test
+      - DATABASE_URL=postgresql://postgres:postgres@test-db:5432/verified_test
+      - SUPABASE_URL=${SUPABASE_URL_TEST:-http://test-db:5432}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY_TEST}
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL_TEST}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY_TEST}
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - verified-test-network
+    depends_on:
+      test-db:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '⏳ Waiting for database to be ready...' &&
+        /app/scripts/wait-for-it.sh test-db:5432 --timeout=60 --strict -- 
+        echo '✅ Database ready. Running tests...' &&
+        pnpm test
+      "
+
+  # Frontend for E2E testing
+  frontend-test:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: verified-frontend-test
+    environment:
+      - NODE_ENV=test
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL_TEST}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY_TEST}
+      - NEXT_PUBLIC_BASE_URL=http://localhost:3001
+    ports:
+      - "3001:3000"  # Different port for test environment
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - verified-test-network
+    depends_on:
+      - backend-test
+
+volumes:
+  test-db-data:
+    driver: local
+
+networks:
+  verified-test-network:
+    driver: bridge

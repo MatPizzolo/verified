@@ -1,0 +1,28 @@
+FROM node:20-alpine
+
+# Install dependencies for wait-for-it and testing
+RUN apk add --no-cache bash curl wget postgresql-client
+
+WORKDIR /app
+
+# Install pnpm
+RUN corepack enable pnpm
+
+# Copy package files
+COPY package.json pnpm-lock.yaml* ./
+
+# Install dependencies (including dev dependencies for testing)
+RUN pnpm install
+
+# Copy wait-for-it script
+COPY scripts/wait-for-it.sh /app/scripts/wait-for-it.sh
+RUN chmod +x /app/scripts/wait-for-it.sh
+
+# Copy application code
+COPY . .
+
+# Expose port
+EXPOSE 4000
+
+# Development mode with hot reload
+CMD ["pnpm", "dev"]
