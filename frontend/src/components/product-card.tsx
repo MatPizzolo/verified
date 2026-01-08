@@ -6,6 +6,7 @@ import Image from "next/image"
 import type { Product } from "@/lib/types"
 import { formatARS } from "@/lib/format"
 import { Package } from "lucide-react"
+import { getSneakerUrl } from "@/lib/images"
 
 interface ProductCardProps {
   product: Product
@@ -14,13 +15,15 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const [imageError, setImageError] = useState(false)
 
+  console.log(product)
+
   return (
     <Link href={`/products/${product.slug}`} className="group">
       <div className="bg-white rounded border border-neutral-200 overflow-hidden transition-all hover:shadow hover:border-primary-300">
         <div className="aspect-[3/2] sm:aspect-[4/3] bg-neutral-100 relative overflow-hidden">
           {!imageError && product.image_url ? (
             <Image
-              src={product.image_url}
+              src={getSneakerUrl(product.image_url)}
               alt={`${product.brand} ${product.name}`}
               fill
               sizes="(max-width: 320px) 25vw, (max-width: 640px) 8vw, 5vw"

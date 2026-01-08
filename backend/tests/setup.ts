@@ -1,11 +1,6 @@
 import { beforeAll, afterAll, afterEach } from 'vitest';
-import dotenv from 'dotenv';
-
-// Load test environment variables
-dotenv.config({ path: '.env.test' });
 
 beforeAll(async () => {
-  // Setup test database connection
   console.log('🧪 Test environment initialized');
 });
 

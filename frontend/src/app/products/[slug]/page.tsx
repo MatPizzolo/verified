@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatARS } from '@/lib/format';
+import { getSneakerUrl } from '@/lib/images';
 import { ShieldCheck, Truck, RotateCcw } from 'lucide-react';
 
 interface ProductDetailPageProps {
@@ -85,8 +86,8 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           <div className="space-y-4">
             <div className="aspect-square bg-neutral-100 rounded-lg overflow-hidden">
               <Image
-                src={product.image_url || "/placeholder.svg"}
-                alt={product.name}
+                src={getSneakerUrl(product.image_url)}
+                alt={`${product.brand.name} ${product.name} ${product.colorway}`}
                 width={600}
                 height={600}
                 className="w-full h-full object-cover"

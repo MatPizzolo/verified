@@ -2,10 +2,43 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { ProductCard } from "@/components/product-card"
-import { mockProducts } from "@/lib/mock-data"
+import { createClient } from "@/lib/supabase/server"
 
-export function FeaturedProducts() {
-  const featured = mockProducts.slice(0, 8)
+export async function FeaturedProducts() {
+  const supabase = await createClient()
+
+  const { data: productsData } = await supabase
+    .from('products')
+    .select(`
+      *,
+      brand:brands(id, name, slug, logo_url),
+      variants(
+        id,
+        size_eu,
+        size_us,
+        market_stats(lowest_ask_ars, highest_bid_ars)
+      )
+    `)
+    .eq('active', true)
+    .limit(8)
+
+  const featured = productsData?.map((product: any) => {
+    const lowestAsk = product.variants
+      ?.map((v: any) => v.market_stats?.[0]?.lowest_ask_ars)
+      .filter((price: any) => price !== null)
+      .sort((a: number, b: number) => a - b)[0]
+
+    return {
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      brand: product.brand?.name || 'Unknown',
+      colorway: product.colorway || '',
+      image_url: product.image_url,
+      retail_price_usd: product.retail_price_usd || 0,
+      lowest_ask: lowestAsk || null,
+    }
+  }) || []
 
   return (
     <section className="py-16 md:py-24">

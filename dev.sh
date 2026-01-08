@@ -31,7 +31,7 @@ case "${1:-up}" in
     
   logs)
     echo "📊 Showing logs..."
-    docker compose logs -f
+    docker compose logs -f 
     ;;
     
   clean)

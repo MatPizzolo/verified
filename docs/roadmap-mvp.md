@@ -58,7 +58,7 @@
   - Evidence: `/frontend/src/components/auth/LoginForm.tsx`
 - [x] Add middleware to protect routes
   - Evidence: `/frontend/src/middleware.ts`
-- [ ] **USER ACTION**: Test user registration and login flow
+- [x] **USER ACTION**: Test user registration and login flow
 
 ---
 
@@ -103,7 +103,7 @@
   - Evidence: Size selector grid in product detail page
 - [x] Add basic filtering by brand (dropdown)
   - Evidence: `/frontend/src/components/products/FilterSidebar.tsx`
-- [ ] **USER ACTION**: Test product browsing and filtering
+- [x] **USER ACTION**: Test product browsing and filtering
 
 ### Basic Search
 - [x] Create search bar component
@@ -112,7 +112,7 @@
   - Evidence: Search query in `/frontend/src/app/products/page.tsx`
 - [x] Display search results
   - Evidence: Search results filtered in products page
-- [ ] **USER ACTION**: Test product search functionality
+- [x] **USER ACTION**: Test product search functionality
 
 ---
 

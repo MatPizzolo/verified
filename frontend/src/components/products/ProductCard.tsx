@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { getSneakerUrl } from '@/lib/images';
 
 interface ProductCardProps {
   product: {
@@ -24,8 +25,8 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Product Image */}
         <div className="relative aspect-square bg-gray-100">
           <Image
-            src={product.image_url}
-            alt={product.name}
+            src={getSneakerUrl(product.image_url)}
+            alt={`${product.brand.name} ${product.name} ${product.colorway}`}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -38,8 +39,8 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="flex items-center gap-2 mb-2">
             {product.brand.logo_url && (
               <Image
-                src={product.brand.logo_url}
-                alt={product.brand.name}
+                src={getSneakerUrl(product.brand.logo_url)}
+                alt={`${product.brand.name} logo`}
                 width={20}
                 height={20}
                 className="object-contain"
