@@ -51,19 +51,36 @@ export function Header() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6">
-            <Link
-              href="/products"
-              className="text-sm font-medium text-neutral-500 hover:text-neutral-900 transition-colors"
-            >
-              Explorar
-            </Link>
-            {user && (
-              <Link
-                href="/products"
-                className="text-sm font-medium text-neutral-500 hover:text-neutral-900 transition-colors"
-              >
-                Vender
-              </Link>
+            {user ? (
+              <>
+                <Link
+                  href="/products"
+                  className="text-sm font-medium text-neutral-500 hover:text-neutral-900 transition-colors"
+                >
+                  Productos
+                </Link>
+                <Link
+                  href="/brands"
+                  className="text-sm font-medium text-neutral-500 hover:text-neutral-900 transition-colors"
+                >
+                  Marcas
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/products"
+                  className="text-sm font-medium text-neutral-500 hover:text-neutral-900 transition-colors"
+                >
+                  Explorar
+                </Link>
+                <Link
+                  href="/how-it-works"
+                  className="text-sm font-medium text-neutral-500 hover:text-neutral-900 transition-colors"
+                >
+                  Cómo funciona
+                </Link>
+              </>
             )}
           </nav>
 
@@ -156,16 +173,27 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-neutral-200 bg-white">
           <nav className="flex flex-col p-4 gap-3">
-            <Link href="/products" className="text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
-              Explorar
-            </Link>
-            <Link href="/products" className="text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
-              Vender
-            </Link>
-            {user && (
-              <Link href="/dashboard" className="text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
-                Mi Dashboard
-              </Link>
+            {user ? (
+              <>
+                <Link href="/products" className="text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
+                  Productos
+                </Link>
+                <Link href="/brands" className="text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
+                  Marcas
+                </Link>
+                <Link href="/dashboard" className="text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
+                  Mi Dashboard
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/products" className="text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
+                  Explorar
+                </Link>
+                <Link href="/how-it-works" className="text-sm font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
+                  Cómo funciona
+                </Link>
+              </>
             )}
             <hr className="border-neutral-200" />
             {user ? (

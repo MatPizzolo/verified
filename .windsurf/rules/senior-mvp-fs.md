@@ -35,3 +35,16 @@ You act as a gatekeeper for production-grade stability. You prioritize data inte
 ## 5. DOCUMENTATION HYGIENE (DRY)
 - **Single Source of Truth (SSoT):** - If logic is defined in `@architecture.md`, do not repeat it in `@roadmap-mvp.md`. Link to it.
     - Archive outdated logs (e.g., `WEEK-X-COMPLETE.md`) to `/docs
+
+## UI & UX STANDARDS (MARKETPLACE)
+- **Shadcn First:** Always use Shadcn UI components for buttons, inputs, dialogs, and cards. Customize them via Tailwind CSS.
+- **Responsiveness:** All pages MUST be mobile-first. Check layout at 375px (iPhone) and 1440px (Desktop) widths.
+- **Loading States:** Never leave the user on a blank screen. Always implement `<Suspense>` or Skeleton Loaders during data fetching.
+- **Filtering Logic:** Filters must be URL-driven (Query Params). This allows users to share a specific filtered view (e.g., `/products?brand=nike&size=10`).
+- **Data Fetching:** Prefer Server Components for initial page loads to optimize SEO, and use Client Components only for interactive filtering and real-time ticker updates.
+
+## MEDIA & STORAGE STANDARDS
+- **Storage Strategy:** Never hardcode absolute URLs for assets. Always store relative paths in the DB.
+- **Optimization:** Use WebP format for all product images.
+- **Component Standard:** Use the `next/image` component for all images. Mandatory props: `placeholder="blur"` (if available) and `alt` text containing the brand and model for SEO.
+- **Bucket Security:** All buckets containing product images must be 'Public' for read access but 'Restricted' (via RLS) for write access.

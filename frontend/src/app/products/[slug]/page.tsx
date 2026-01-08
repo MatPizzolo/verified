@@ -92,87 +92,108 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                 className="w-full h-full object-cover"
               />
             </div>
-                      {formatARS(highestBid)}
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs text-neutral-500 mb-1">Last Sale</p>
-                    <p className="text-lg font-bold text-neutral-900">
-                      {formatARS(lastSale)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* CTA Buttons */}
-              <div className="flex gap-3">
-                <Link
-                  href="/login"
-                  className="flex-1 h-14 flex flex-col items-center justify-center border border-primary-500 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                >
-                  <span className="font-medium">Hacer Oferta</span>
-                  <span className="text-xs">{formatARS(highestBid)} o más</span>
-                </Link>
-                <Link
-                  href="/login"
-                  className="flex-1 h-14 flex flex-col items-center justify-center bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
-                >
-                  <span className="font-medium">Comprar Ahora</span>
-                  <span className="text-xs">{formatARS(lowestAsk)}</span>
-                </Link>
-              </div>
-
-              {/* Trust Badges */}
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-neutral-200">
-                <div className="text-center">
-                  <ShieldCheck className="w-6 h-6 text-primary-500 mx-auto mb-2" />
-                  <p className="text-xs text-neutral-500">100% Auténtico</p>
-                </div>
-                <div className="text-center">
-                  <Truck className="w-6 h-6 text-primary-500 mx-auto mb-2" />
-                  <p className="text-xs text-neutral-500">Envío Seguro</p>
-                </div>
-                <div className="text-center">
-                  <RotateCcw className="w-6 h-6 text-primary-500 mx-auto mb-2" />
-                  <p className="text-xs text-neutral-500">Garantía</p>
-                </div>
-              </div>
-
-              {/* Product Details */}
-              <div className="bg-neutral-100 rounded-xl p-4">
-                <h3 className="font-medium text-neutral-900 mb-3">Detalles del Producto</h3>
-                <dl className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <dt className="text-neutral-500">Marca</dt>
-                    <dd className="text-neutral-900 font-medium">{product.brand.name}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-neutral-500">Colorway</dt>
-                    <dd className="text-neutral-900 font-medium">{product.colorway}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-neutral-500">SKU</dt>
-                    <dd className="text-neutral-900 font-medium">{product.sku || '—'}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-neutral-500">Retail</dt>
-                    <dd className="text-neutral-900 font-medium">${product.retail_price_usd} USD</dd>
-                  </div>
-                </dl>
-              </div>
-            </div>
           </div>
 
-          {/* Description */}
-          {product.description && (
-            <div className="mt-8 bg-white rounded-xl border border-neutral-200 p-6">
-              <h2 className="text-lg font-semibold text-neutral-900 mb-4">
-                Descripción
-              </h2>
-              <p className="text-neutral-600 leading-relaxed">{product.description}</p>
+          {/* Product Info & Actions */}
+          <div className="space-y-6">
+            {/* Title & Brand */}
+            <div>
+              <p className="text-sm text-neutral-500 mb-2">{product.brand.name}</p>
+              <h1 className="text-3xl font-bold text-neutral-900 mb-2">{product.name}</h1>
+              <p className="text-neutral-600">{product.colorway}</p>
             </div>
-          )}
+
+            {/* Market Stats */}
+            <div className="grid grid-cols-3 gap-4 py-6 border-y border-neutral-200">
+              <div className="text-center">
+                <p className="text-xs text-neutral-500 mb-1">Lowest Ask</p>
+                <p className="text-lg font-bold text-neutral-900">
+                  {formatARS(lowestAsk)}
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-neutral-500 mb-1">Highest Bid</p>
+                <p className="text-lg font-bold text-neutral-900">
+                  {formatARS(highestBid)}
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-neutral-500 mb-1">Last Sale</p>
+                <p className="text-lg font-bold text-neutral-900">
+                  {formatARS(lastSale)}
+                </p>
+              </div>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex gap-3">
+              <Link
+                href="/login"
+                className="flex-1 h-14 flex flex-col items-center justify-center border-2 border-primary-500 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+              >
+                <span className="font-medium">Hacer Oferta</span>
+                <span className="text-xs">{formatARS(highestBid)} o más</span>
+              </Link>
+              <Link
+                href="/login"
+                className="flex-1 h-14 flex flex-col items-center justify-center bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+              >
+                <span className="font-medium">Comprar Ahora</span>
+                <span className="text-xs">{formatARS(lowestAsk)}</span>
+              </Link>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="grid grid-cols-3 gap-4 pt-4 border-t border-neutral-200">
+              <div className="text-center">
+                <ShieldCheck className="w-6 h-6 text-primary-500 mx-auto mb-2" />
+                <p className="text-xs text-neutral-500">100% Auténtico</p>
+              </div>
+              <div className="text-center">
+                <Truck className="w-6 h-6 text-primary-500 mx-auto mb-2" />
+                <p className="text-xs text-neutral-500">Envío Seguro</p>
+              </div>
+              <div className="text-center">
+                <RotateCcw className="w-6 h-6 text-primary-500 mx-auto mb-2" />
+                <p className="text-xs text-neutral-500">Garantía</p>
+              </div>
+            </div>
+
+            {/* Product Details */}
+            <div className="bg-neutral-100 rounded-xl p-4">
+              <h3 className="font-medium text-neutral-900 mb-3">Detalles del Producto</h3>
+              <dl className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <dt className="text-neutral-500">Marca</dt>
+                  <dd className="text-neutral-900 font-medium">{product.brand.name}</dd>
+                </div>
+                <div>
+                  <dt className="text-neutral-500">Colorway</dt>
+                  <dd className="text-neutral-900 font-medium">{product.colorway}</dd>
+                </div>
+                <div>
+                  <dt className="text-neutral-500">SKU</dt>
+                  <dd className="text-neutral-900 font-medium">{product.sku || '—'}</dd>
+                </div>
+                <div>
+                  <dt className="text-neutral-500">Retail</dt>
+                  <dd className="text-neutral-900 font-medium">${product.retail_price_usd} USD</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
         </div>
+
+        {/* Description */}
+        {product.description && (
+          <div className="bg-white rounded-xl border border-neutral-200 p-6">
+            <h2 className="text-lg font-semibold text-neutral-900 mb-4">
+              Descripción
+            </h2>
+            <p className="text-neutral-600 leading-relaxed">{product.description}</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

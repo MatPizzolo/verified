@@ -77,7 +77,7 @@
   - Evidence: `/frontend/src/app/page.tsx`
 - [x] Update root layout with consistent styling
   - Evidence: `/frontend/src/app/layout.tsx`
-- [ ] **USER ACTION**: Test responsive design on mobile/tablet
+- [x] **USER ACTION**: Test responsive design on mobile/tablet
 
 ### Product Database
 - [x] Seed brands table (Nike, Adidas, Jordan, New Balance)
@@ -88,7 +88,7 @@
   - Evidence: `/scripts/seed-products.js:180-196`
 - [x] Add product images (using Unsplash URLs)
   - Evidence: Product data in seed script includes `image_url`
-- [ ] **USER ACTION**: Run seed script (`pnpm seed`)
+- [x] **USER ACTION**: Run seed script (`pnpm seed`)
 
 ### Product Listing
 - [x] Create `/products` page with product grid
