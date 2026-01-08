@@ -54,17 +54,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get current USD/ARS exchange rate
+    // Get current USD/ARS exchange rate (use 'blue' rate for market pricing)
     const { data: exchangeRate } = await supabase
       .from('exchange_rates')
-      .select('rate')
-      .eq('from_currency', 'USD')
-      .eq('to_currency', 'ARS')
+      .select('usd_to_ars')
+      .eq('rate_type', 'blue')
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
 
-    const usdArsRate = exchangeRate?.rate || 1000; // Default fallback
+    const usdArsRate = exchangeRate?.usd_to_ars || 1350; // Default fallback
     const priceUsd = price_ars / usdArsRate;
 
     // Set expiration (default 30 days from now)

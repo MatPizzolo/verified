@@ -36,12 +36,12 @@
 
 ### Database Setup
 **📖 Follow instructions in [`docs/SETUP.md`](./SETUP.md)**
-- [ ] **USER ACTION**: Create Supabase account and project
-- [ ] **USER ACTION**: Run schema.sql to create tables
-- [~] Configure Row Level Security (RLS) policies
+- [x] **USER ACTION**: Create Supabase account and project
+- [x] **USER ACTION**: Run schema.sql to create tables
+- [x] Configure Row Level Security (RLS) policies
   - [x] RLS policies defined in `docs/schema.sql`
-  - [ ] RLS policies deployed to Supabase (user must verify)
-- [ ] **USER ACTION**: Test database connection (`pnpm test:db`)
+  - [x] RLS policies deployed to Supabase (user must verify)
+- [x] **USER ACTION**: Test database connection (`pnpm test:db`)
 
 ### Basic Authentication
 - [x] Install Supabase client libraries

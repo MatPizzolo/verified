@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 
 const registerSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -46,8 +46,9 @@ export async function POST(request: NextRequest) {
       throw new Error('User creation failed');
     }
 
-    // Create public user record
-    const { error: userError } = await supabase
+    // Create public user record using admin client (bypasses RLS)
+    const adminClient = createAdminClient();
+    const { error: userError } = await adminClient
       .from('users')
       .insert({
         auth_id: authData.user.id,

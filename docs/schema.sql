@@ -6,8 +6,9 @@
 -- Features: UUIDs, timestamps, RLS policies, indexes
 -- ============================================================================
 
--- Enable UUID extension
+-- Enable extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- ============================================================================
 -- ENUMS
@@ -154,8 +155,7 @@ CREATE INDEX idx_products_release_date ON products(release_date);
 CREATE INDEX idx_products_name_trgm ON products USING gin(name gin_trgm_ops);
 CREATE INDEX idx_products_colorway_trgm ON products USING gin(colorway gin_trgm_ops);
 
--- Enable full-text search
-CREATE EXTENSION IF NOT EXISTS pg_trgm;
+-- Full-text search
 ALTER TABLE products ADD COLUMN search_vector tsvector;
 CREATE INDEX idx_products_search ON products USING gin(search_vector);
 
@@ -216,8 +216,8 @@ CREATE TABLE bids (
   -- Expiration
   expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
   
-  -- Matching
-  matched_ask_id UUID REFERENCES asks(id),
+  -- Matching (FK added after asks table exists)
+  matched_ask_id UUID,
   matched_at TIMESTAMP WITH TIME ZONE,
   
   -- Timestamps
@@ -254,14 +254,18 @@ CREATE TABLE asks (
   -- Expiration
   expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
   
-  -- Matching
-  matched_bid_id UUID REFERENCES bids(id),
+  -- Matching (FK added after both tables exist)
+  matched_bid_id UUID,
   matched_at TIMESTAMP WITH TIME ZONE,
   
   -- Timestamps
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Cross-reference foreign keys (added after both tables exist)
+ALTER TABLE bids ADD CONSTRAINT fk_bids_matched_ask FOREIGN KEY (matched_ask_id) REFERENCES asks(id);
+ALTER TABLE asks ADD CONSTRAINT fk_asks_matched_bid FOREIGN KEY (matched_bid_id) REFERENCES bids(id);
 
 -- Indexes
 CREATE INDEX idx_asks_variant_id ON asks(variant_id);
@@ -295,9 +299,9 @@ CREATE TABLE transactions (
   shipping_fee_ars DECIMAL(10, 2) DEFAULT 0,
   total_buyer_payment_ars DECIMAL(12, 2) NOT NULL,
   
-  -- Seller Payout
+  -- Seller Payout (FK added after payouts table exists)
   seller_payout_ars DECIMAL(12, 2),
-  payout_id UUID REFERENCES payouts(id),
+  payout_id UUID,
   
   -- Status
   status transaction_status DEFAULT 'pending_payment',
@@ -341,9 +345,9 @@ CREATE TABLE transactions (
 -- Indexes
 CREATE INDEX idx_transactions_bid_id ON transactions(bid_id);
 CREATE INDEX idx_transactions_ask_id ON transactions(ask_id);
--- CRITICAL: Unique partial indexes for idempotency (prevent duplicate matches)
-CREATE UNIQUE INDEX idx_transactions_bid_id_unique ON transactions(bid_id) WHERE bid_id IS NOT NULL;
-CREATE UNIQUE INDEX idx_transactions_ask_id_unique ON transactions(ask_id) WHERE ask_id IS NOT NULL;
+-- CRITICAL: Unique indexes for idempotency (prevent duplicate matches)
+CREATE UNIQUE INDEX idx_transactions_bid_id_unique ON transactions(bid_id);
+CREATE UNIQUE INDEX idx_transactions_ask_id_unique ON transactions(ask_id);
 CREATE INDEX idx_transactions_variant_id ON transactions(variant_id);
 CREATE INDEX idx_transactions_buyer_id ON transactions(buyer_id);
 CREATE INDEX idx_transactions_seller_id ON transactions(seller_id);
@@ -384,6 +388,9 @@ CREATE TABLE payouts (
 CREATE INDEX idx_payouts_transaction_id ON payouts(transaction_id);
 CREATE INDEX idx_payouts_seller_id ON payouts(seller_id);
 CREATE INDEX idx_payouts_status ON payouts(status);
+
+-- FK for transactions.payout_id (added after payouts table exists)
+ALTER TABLE transactions ADD CONSTRAINT fk_transactions_payout FOREIGN KEY (payout_id) REFERENCES payouts(id);
 
 -- ============================================================================
 -- NOTIFICATIONS TABLE

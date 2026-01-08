@@ -161,11 +161,11 @@ END IF;
 
 ```sql
 -- In schema.sql
-CREATE UNIQUE INDEX idx_transactions_bid_id ON transactions(bid_id) WHERE bid_id IS NOT NULL;
-CREATE UNIQUE INDEX idx_transactions_ask_id ON transactions(ask_id) WHERE ask_id IS NOT NULL;
+CREATE UNIQUE INDEX idx_transactions_bid_id_unique ON transactions(bid_id);
+CREATE UNIQUE INDEX idx_transactions_ask_id_unique ON transactions(ask_id);
 ```
 
-- Database-level guarantee
+- Database-level guarantee (bid_id and ask_id are NOT NULL columns)
 - Prevents duplicate transactions even if all checks fail
 
 ---

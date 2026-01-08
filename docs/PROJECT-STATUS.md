@@ -36,12 +36,12 @@ pnpm test:env
 
 | Phase | Status | Details |
 |-------|--------|---------|
-| **Week 1-2**: Infrastructure & Auth | ✅ Complete | [WEEK-1-2-COMPLETE.md](./WEEK-1-2-COMPLETE.md) |
-| **Week 3-4**: Product Catalog & UI | ✅ Complete | [WEEK-3-4-COMPLETE.md](./WEEK-3-4-COMPLETE.md) |
-| **Week 5-6**: Bid/Ask Engine | ✅ Code Complete | [WEEK-5-6-COMPLETE.md](./WEEK-5-6-COMPLETE.md) |
-| **Week 7-8**: Stability & Validation | 🔄 In Progress | [roadmap-mvp.md](./roadmap-mvp.md#week-7-8-stability--validation) |
-| **Week 9-10**: Payments & Checkout | ⏳ Pending | [roadmap-mvp.md](./roadmap-mvp.md#week-9-10-payments--checkout) |
-| **Week 11-12**: Admin & Launch | ⏳ Pending | [roadmap-mvp.md](./roadmap-mvp.md#week-11-12-admin--launch-prep) |
+| **Week 1-2**: Infrastructure & Auth | ✅ Complete | [history/WEEK-1-2-COMPLETE.md](./history/WEEK-1-2-COMPLETE.md) |
+| **Week 3-4**: Product Catalog & UI | ✅ Complete | [history/WEEK-3-4-COMPLETE.md](./history/WEEK-3-4-COMPLETE.md) |
+| **Week 5-6**: Bid/Ask Engine | ✅ Complete | [history/WEEK-5-6-COMPLETE.md](./history/WEEK-5-6-COMPLETE.md) |
+| **Week 7-8**: Stability & Validation | 🔄 In Progress | [roadmap-mvp.md](./roadmap-mvp.md) |
+| **Week 9-10**: Payments & Checkout | ⏳ Pending | [roadmap-mvp.md](./roadmap-mvp.md) |
+| **Week 11-12**: Admin & Launch | ⏳ Pending | [roadmap-mvp.md](./roadmap-mvp.md) |
 
 ---
 
@@ -123,24 +123,21 @@ pnpm test:env
 
 ### Setup & Configuration
 - **[README.md](../README.md)** - Project overview and quick start
-- **[SETUP.md](./SETUP.md)** - Detailed setup instructions
-- **[environment-setup.md](./environment-setup.md)** - Environment variables guide
+- **[SETUP.md](./SETUP.md)** - Complete setup guide (includes env vars, MP setup)
 
 ### Architecture & Design
 - **[architecture.md](./architecture.md)** - System architecture
+- **[MATCHING.md](./MATCHING.md)** - Bid/Ask matching engine
 - **[schema.sql](./schema.sql)** - Database schema
-- **[roadmap-mvp.md](./roadmap-mvp.md)** - MVP roadmap (current)
-- **[roadmap-v2.md](./roadmap-v2.md)** - Post-MVP features
+- **[schema-triggers.sql](./schema-triggers.sql)** - Matching triggers
+- **[roadmap-mvp.md](./roadmap-mvp.md)** - MVP roadmap
 
 ### Testing
 - **[DOCKER-TESTING.md](./DOCKER-TESTING.md)** - Docker testing guide
 - **Backend tests**: `backend/src/lib/*.test.ts`
-- **Validation scripts**: `scripts/validate-*.ts`
 
-### Phase Completion
-- **[WEEK-1-2-COMPLETE.md](./WEEK-1-2-COMPLETE.md)** - Infrastructure & Auth
-- **[WEEK-3-4-COMPLETE.md](./WEEK-3-4-COMPLETE.md)** - Product Catalog & UI
-- **[WEEK-5-6-COMPLETE.md](./WEEK-5-6-COMPLETE.md)** - Bid/Ask Engine
+### History
+- **[history/](./history/)** - Archived phase completion logs
 
 ---
 
