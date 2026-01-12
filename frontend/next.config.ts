@@ -19,8 +19,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
-      },
+      }
     ],
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
   },
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {

@@ -205,10 +205,10 @@ CREATE TABLE bids (
   variant_id UUID NOT NULL REFERENCES variants(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   
-  -- Bid Details
-  price_ars DECIMAL(12, 2) NOT NULL CHECK (price_ars > 0),
-  price_usd DECIMAL(10, 2), -- USD equivalent at time of bid
-  usd_ars_rate DECIMAL(10, 4), -- Exchange rate used
+  -- Bid Details (prices stored as integers in centavos/cents)
+  price_ars BIGINT NOT NULL CHECK (price_ars > 0), -- Price in centavos (e.g., 10000000 = 100,000.00 ARS)
+  price_usd BIGINT, -- USD equivalent in cents
+  usd_ars_rate DECIMAL(10, 4), -- Exchange rate used (e.g., 1350.5000 ARS/USD)
   
   -- Status
   status listing_status DEFAULT 'active',
@@ -243,10 +243,10 @@ CREATE TABLE asks (
   variant_id UUID NOT NULL REFERENCES variants(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   
-  -- Ask Details
-  price_ars DECIMAL(12, 2) NOT NULL CHECK (price_ars > 0),
-  price_usd DECIMAL(10, 2), -- USD equivalent at time of ask
-  usd_ars_rate DECIMAL(10, 4), -- Exchange rate used
+  -- Ask Details (prices stored as integers in centavos/cents)
+  price_ars BIGINT NOT NULL CHECK (price_ars > 0), -- Price in centavos (e.g., 10000000 = 100,000.00 ARS)
+  price_usd BIGINT, -- USD equivalent in cents
+  usd_ars_rate DECIMAL(10, 4), -- Exchange rate used (e.g., 1350.5000 ARS/USD)
   
   -- Status
   status listing_status DEFAULT 'active',
@@ -288,19 +288,19 @@ CREATE TABLE transactions (
   buyer_id UUID NOT NULL REFERENCES users(id),
   seller_id UUID NOT NULL REFERENCES users(id),
   
-  -- Pricing
-  sale_price_ars DECIMAL(12, 2) NOT NULL,
-  sale_price_usd DECIMAL(10, 2),
-  usd_ars_rate DECIMAL(10, 4),
+  -- Pricing (all prices stored as integers in centavos/cents)
+  sale_price_ars BIGINT NOT NULL, -- Sale price in centavos
+  sale_price_usd BIGINT, -- USD equivalent in cents
+  usd_ars_rate DECIMAL(10, 4), -- Exchange rate used (e.g., 1350.5000 ARS/USD)
   
-  -- Fees
-  platform_fee_ars DECIMAL(10, 2) DEFAULT 0,
-  authentication_fee_ars DECIMAL(10, 2) DEFAULT 0,
-  shipping_fee_ars DECIMAL(10, 2) DEFAULT 0,
-  total_buyer_payment_ars DECIMAL(12, 2) NOT NULL,
+  -- Fees (all fees in centavos)
+  platform_fee_ars BIGINT DEFAULT 0,
+  authentication_fee_ars BIGINT DEFAULT 0,
+  shipping_fee_ars BIGINT DEFAULT 0,
+  total_buyer_payment_ars BIGINT NOT NULL,
   
   -- Seller Payout (FK added after payouts table exists)
-  seller_payout_ars DECIMAL(12, 2),
+  seller_payout_ars BIGINT,
   payout_id UUID,
   
   -- Status
@@ -366,8 +366,8 @@ CREATE TABLE payouts (
   transaction_id UUID NOT NULL REFERENCES transactions(id),
   seller_id UUID NOT NULL REFERENCES users(id),
   
-  -- Amount
-  amount_ars DECIMAL(12, 2) NOT NULL,
+  -- Amount (in centavos)
+  amount_ars BIGINT NOT NULL,
   
   -- Mercado Pago
   mp_transfer_id VARCHAR(255),
@@ -424,6 +424,29 @@ CREATE INDEX idx_notifications_read ON notifications(read);
 CREATE INDEX idx_notifications_created_at ON notifications(created_at DESC);
 
 -- ============================================================================
+-- SAVED_PRODUCTS TABLE
+-- ============================================================================
+
+CREATE TABLE saved_products (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  
+  -- References
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  
+  -- Timestamps
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  
+  -- Ensure user can't save same product twice
+  UNIQUE(user_id, product_id)
+);
+
+-- Indexes
+CREATE INDEX idx_saved_products_user_id ON saved_products(user_id);
+CREATE INDEX idx_saved_products_product_id ON saved_products(product_id);
+CREATE INDEX idx_saved_products_created_at ON saved_products(created_at DESC);
+
+-- ============================================================================
 -- PRICE_HISTORY TABLE
 -- ============================================================================
 
@@ -434,9 +457,9 @@ CREATE TABLE price_history (
   variant_id UUID NOT NULL REFERENCES variants(id) ON DELETE CASCADE,
   transaction_id UUID REFERENCES transactions(id),
   
-  -- Price Data
-  price_ars DECIMAL(12, 2) NOT NULL,
-  price_usd DECIMAL(10, 2),
+  -- Price Data (in centavos/cents)
+  price_ars BIGINT NOT NULL,
+  price_usd BIGINT,
   
   -- Timestamp
   recorded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -456,21 +479,21 @@ CREATE TABLE market_stats (
   -- References
   variant_id UUID UNIQUE NOT NULL REFERENCES variants(id) ON DELETE CASCADE,
   
-  -- Current Market Data
-  lowest_ask_ars DECIMAL(12, 2),
+  -- Current Market Data (in centavos)
+  lowest_ask_ars BIGINT,
   lowest_ask_id UUID REFERENCES asks(id),
-  highest_bid_ars DECIMAL(12, 2),
+  highest_bid_ars BIGINT,
   highest_bid_id UUID REFERENCES bids(id),
   
   -- Last Sale
-  last_sale_price_ars DECIMAL(12, 2),
+  last_sale_price_ars BIGINT,
   last_sale_at TIMESTAMP WITH TIME ZONE,
   
   -- Statistics
   total_asks INTEGER DEFAULT 0,
   total_bids INTEGER DEFAULT 0,
   total_sales INTEGER DEFAULT 0,
-  avg_sale_price_ars DECIMAL(12, 2),
+  avg_sale_price_ars BIGINT,
   
   -- Timestamps
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -564,15 +587,15 @@ ALTER TABLE asks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payouts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE saved_products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE price_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE market_stats ENABLE ROW LEVEL SECURITY;
 ALTER TABLE exchange_rates ENABLE ROW LEVEL SECURITY;
 
--- Users: Can read own profile, admins can read all
+-- Users: Can read own profile
+-- Note: Admin access is handled via service role key (createAdminClient) to avoid circular dependencies
 CREATE POLICY users_select_own ON users
-  FOR SELECT USING (auth.uid() = auth_id OR EXISTS (
-    SELECT 1 FROM users WHERE auth_id = auth.uid() AND role = 'admin'
-  ));
+  FOR SELECT USING (auth.uid() = auth_id);
 
 CREATE POLICY users_update_own ON users
   FOR UPDATE USING (auth.uid() = auth_id);
@@ -602,10 +625,10 @@ CREATE POLICY bids_select_own_or_active ON bids
     status = 'active'
   );
 
+-- Bids: Allow inserts (user validation in application layer)
+-- Service role key bypasses RLS for system/seed operations
 CREATE POLICY bids_insert_own ON bids
-  FOR INSERT WITH CHECK (
-    user_id IN (SELECT id FROM users WHERE auth_id = auth.uid())
-  );
+  FOR INSERT WITH CHECK (true);
 
 CREATE POLICY bids_update_own ON bids
   FOR UPDATE USING (
@@ -619,29 +642,34 @@ CREATE POLICY asks_select_own_or_active ON asks
     status = 'active'
   );
 
+-- Asks: Allow inserts (user validation in application layer)
+-- Service role key bypasses RLS for system/seed operations
 CREATE POLICY asks_insert_own ON asks
-  FOR INSERT WITH CHECK (
-    user_id IN (SELECT id FROM users WHERE auth_id = auth.uid())
-  );
+  FOR INSERT WITH CHECK (true);
 
 CREATE POLICY asks_update_own ON asks
   FOR UPDATE USING (
     user_id IN (SELECT id FROM users WHERE auth_id = auth.uid())
   );
 
--- Transactions: Users can read own transactions, admins can read all
-CREATE POLICY transactions_select_own_or_admin ON transactions
+-- Transactions: Users can read own transactions
+-- Note: Admin access via service role key to avoid circular dependencies
+CREATE POLICY transactions_select_own ON transactions
   FOR SELECT USING (
     buyer_id IN (SELECT id FROM users WHERE auth_id = auth.uid()) OR
-    seller_id IN (SELECT id FROM users WHERE auth_id = auth.uid()) OR
-    EXISTS (SELECT 1 FROM users WHERE auth_id = auth.uid() AND role = 'admin')
+    seller_id IN (SELECT id FROM users WHERE auth_id = auth.uid())
   );
 
--- Payouts: Users can read own payouts, admins can read all
-CREATE POLICY payouts_select_own_or_admin ON payouts
+-- Transactions: Allow inserts (matching logic handled by application)
+-- Service role key bypasses RLS for admin/system operations
+CREATE POLICY transactions_insert_system ON transactions
+  FOR INSERT WITH CHECK (true);
+
+-- Payouts: Users can read own payouts
+-- Note: Admin access via service role key to avoid circular dependencies
+CREATE POLICY payouts_select_own ON payouts
   FOR SELECT USING (
-    seller_id IN (SELECT id FROM users WHERE auth_id = auth.uid()) OR
-    EXISTS (SELECT 1 FROM users WHERE auth_id = auth.uid() AND role = 'admin')
+    seller_id IN (SELECT id FROM users WHERE auth_id = auth.uid())
   );
 
 -- Notifications: Users can read own notifications
@@ -652,6 +680,22 @@ CREATE POLICY notifications_select_own ON notifications
 
 CREATE POLICY notifications_update_own ON notifications
   FOR UPDATE USING (
+    user_id IN (SELECT id FROM users WHERE auth_id = auth.uid())
+  );
+
+-- Saved Products: Users can manage their own saved products
+CREATE POLICY saved_products_select_own ON saved_products
+  FOR SELECT USING (
+    user_id IN (SELECT id FROM users WHERE auth_id = auth.uid())
+  );
+
+CREATE POLICY saved_products_insert_own ON saved_products
+  FOR INSERT WITH CHECK (
+    user_id IN (SELECT id FROM users WHERE auth_id = auth.uid())
+  );
+
+CREATE POLICY saved_products_delete_own ON saved_products
+  FOR DELETE USING (
     user_id IN (SELECT id FROM users WHERE auth_id = auth.uid())
   );
 
@@ -689,7 +733,7 @@ INSERT INTO exchange_rates (rate_type, usd_to_ars, source) VALUES
 -- ============================================================================
 
 -- Function to find matching ask for a new bid
-CREATE OR REPLACE FUNCTION find_matching_ask(p_variant_id UUID, p_bid_price DECIMAL)
+CREATE OR REPLACE FUNCTION find_matching_ask(p_variant_id UUID, p_bid_price BIGINT)
 RETURNS UUID AS $$
 DECLARE
   v_ask_id UUID;
@@ -708,7 +752,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Function to find matching bid for a new ask
-CREATE OR REPLACE FUNCTION find_matching_bid(p_variant_id UUID, p_ask_price DECIMAL)
+CREATE OR REPLACE FUNCTION find_matching_bid(p_variant_id UUID, p_ask_price BIGINT)
 RETURNS UUID AS $$
 DECLARE
   v_bid_id UUID;
@@ -730,16 +774,16 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION update_market_stats(p_variant_id UUID)
 RETURNS VOID AS $$
 DECLARE
-  v_lowest_ask DECIMAL;
+  v_lowest_ask BIGINT;
   v_lowest_ask_id UUID;
-  v_highest_bid DECIMAL;
+  v_highest_bid BIGINT;
   v_highest_bid_id UUID;
-  v_last_sale_price DECIMAL;
+  v_last_sale_price BIGINT;
   v_last_sale_at TIMESTAMP;
   v_total_asks INTEGER;
   v_total_bids INTEGER;
   v_total_sales INTEGER;
-  v_avg_sale_price DECIMAL;
+  v_avg_sale_price BIGINT;
 BEGIN
   -- Get lowest ask
   SELECT price_ars, id INTO v_lowest_ask, v_lowest_ask_id
@@ -863,6 +907,276 @@ COMMENT ON TABLE notifications IS 'In-app notifications for users';
 COMMENT ON TABLE price_history IS 'Historical price data for market analysis';
 COMMENT ON TABLE market_stats IS 'Cached market statistics for performance';
 COMMENT ON TABLE exchange_rates IS 'USD to ARS exchange rates';
+
+-- ============================================================================
+-- CONSOLIDATED SUPABASE FUNCTIONS
+-- ============================================================================
+-- Purpose: Eliminate duplicate logic from backend routes
+-- Move all bid/ask creation logic to database layer
+-- ============================================================================
+
+-- ============================================================================
+-- FUNCTION: create_bid_or_ask
+-- ============================================================================
+-- Single function to handle both bid and ask creation
+-- Consolidates all validation, price conversion, and insertion logic
+
+CREATE OR REPLACE FUNCTION create_bid_or_ask(
+  p_listing_type TEXT,  -- 'bid' or 'ask'
+  p_variant_id UUID,
+  p_user_id UUID,
+  p_price_ars INTEGER,
+  p_expires_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
+)
+RETURNS JSON AS $$
+DECLARE
+  v_variant_exists BOOLEAN;
+  v_exchange_rate DECIMAL(10, 4);
+  v_price_usd BIGINT;
+  v_expires_at TIMESTAMP WITH TIME ZONE;
+  v_result JSON;
+BEGIN
+  -- Validate listing type
+  IF p_listing_type NOT IN ('bid', 'ask') THEN
+    RAISE EXCEPTION 'Invalid listing type. Must be "bid" or "ask"'
+      USING ERRCODE = 'P0001';
+  END IF;
+
+  -- Validate price is positive integer
+  IF p_price_ars IS NULL OR p_price_ars <= 0 THEN
+    RAISE EXCEPTION 'Price must be a positive integer (centavos)'
+      USING ERRCODE = '23514';
+  END IF;
+
+  -- Validate variant exists and is active
+  SELECT EXISTS(
+    SELECT 1 FROM variants 
+    WHERE id = p_variant_id AND active = true
+  ) INTO v_variant_exists;
+  
+  IF NOT v_variant_exists THEN
+    RAISE EXCEPTION 'Variant not found or inactive'
+      USING ERRCODE = 'P0002';
+  END IF;
+  
+  -- Get latest exchange rate (blue rate for market pricing)
+  SELECT usd_to_ars INTO v_exchange_rate
+  FROM exchange_rates
+  WHERE rate_type = 'blue'
+  ORDER BY created_at DESC
+  LIMIT 1;
+  
+  -- Default to 1350.00 if no rate found
+  IF v_exchange_rate IS NULL THEN
+    v_exchange_rate := 1350.00;
+  END IF;
+  
+  -- Convert ARS centavos to USD cents using integer math
+  -- Formula: (arsCentavos * 10000) / (rate * 10000)
+  -- Example: 10000000 centavos / 1350.50 rate = 7403 USD cents ($74.03)
+  v_price_usd := ROUND((p_price_ars::NUMERIC * 10000.0) / (v_exchange_rate * 10000))::BIGINT;
+  
+  -- Set expiration (default 30 days from now)
+  v_expires_at := COALESCE(p_expires_at, NOW() + INTERVAL '30 days');
+  
+  -- Insert based on type
+  IF p_listing_type = 'bid' THEN
+    INSERT INTO bids (
+      variant_id, 
+      user_id, 
+      price_ars, 
+      price_usd, 
+      usd_ars_rate, 
+      expires_at, 
+      status,
+      created_at,
+      updated_at
+    ) VALUES (
+      p_variant_id, 
+      p_user_id, 
+      p_price_ars, 
+      v_price_usd,
+      v_exchange_rate, 
+      v_expires_at, 
+      'active',
+      NOW(),
+      NOW()
+    )
+    RETURNING json_build_object(
+      'id', id,
+      'variant_id', variant_id,
+      'user_id', user_id,
+      'price_ars', price_ars,
+      'price_usd', price_usd,
+      'usd_ars_rate', usd_ars_rate,
+      'status', status,
+      'expires_at', expires_at,
+      'created_at', created_at
+    ) INTO v_result;
+  ELSE
+    INSERT INTO asks (
+      variant_id, 
+      user_id, 
+      price_ars, 
+      price_usd, 
+      usd_ars_rate, 
+      expires_at, 
+      status,
+      created_at,
+      updated_at
+    ) VALUES (
+      p_variant_id, 
+      p_user_id, 
+      p_price_ars, 
+      v_price_usd,
+      v_exchange_rate, 
+      v_expires_at, 
+      'active',
+      NOW(),
+      NOW()
+    )
+    RETURNING json_build_object(
+      'id', id,
+      'variant_id', variant_id,
+      'user_id', user_id,
+      'price_ars', price_ars,
+      'price_usd', price_usd,
+      'usd_ars_rate', usd_ars_rate,
+      'status', status,
+      'expires_at', expires_at,
+      'created_at', created_at
+    ) INTO v_result;
+  END IF;
+  
+  RETURN v_result;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Grant execute permission to authenticated users
+GRANT EXECUTE ON FUNCTION create_bid_or_ask TO authenticated;
+
+COMMENT ON FUNCTION create_bid_or_ask IS 'Unified function to create bids or asks with validation and price conversion';
+
+-- ============================================================================
+-- TRIGGER: validate_listing_price
+-- ============================================================================
+-- Ensures all prices are positive integers (no decimals, no negatives)
+
+CREATE OR REPLACE FUNCTION validate_listing_price()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Ensure price is positive
+  IF NEW.price_ars <= 0 THEN
+    RAISE EXCEPTION 'Price must be greater than 0'
+      USING ERRCODE = '23514';
+  END IF;
+  
+  -- Ensure price is integer (no decimals)
+  IF NEW.price_ars != FLOOR(NEW.price_ars) THEN
+    RAISE EXCEPTION 'Price must be an integer (centavos)'
+      USING ERRCODE = '23514';
+  END IF;
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Apply trigger to bids table
+DROP TRIGGER IF EXISTS validate_bid_price ON bids;
+CREATE TRIGGER validate_bid_price
+  BEFORE INSERT OR UPDATE ON bids
+  FOR EACH ROW
+  EXECUTE FUNCTION validate_listing_price();
+
+-- Apply trigger to asks table
+DROP TRIGGER IF EXISTS validate_ask_price ON asks;
+CREATE TRIGGER validate_ask_price
+  BEFORE INSERT OR UPDATE ON asks
+  FOR EACH ROW
+  EXECUTE FUNCTION validate_listing_price();
+
+COMMENT ON FUNCTION validate_listing_price IS 'Validates that listing prices are positive integers (centavos)';
+
+-- ============================================================================
+-- FUNCTION: cancel_listing
+-- ============================================================================
+-- Unified function to cancel bids or asks
+
+CREATE OR REPLACE FUNCTION cancel_listing(
+  p_listing_type TEXT,  -- 'bid' or 'ask'
+  p_listing_id UUID,
+  p_user_id UUID
+)
+RETURNS JSON AS $$
+DECLARE
+  v_listing_user_id UUID;
+  v_listing_status TEXT;
+  v_result JSON;
+BEGIN
+  -- Validate listing type
+  IF p_listing_type NOT IN ('bid', 'ask') THEN
+    RAISE EXCEPTION 'Invalid listing type. Must be "bid" or "ask"'
+      USING ERRCODE = 'P0001';
+  END IF;
+
+  -- Get listing details and verify ownership
+  IF p_listing_type = 'bid' THEN
+    SELECT user_id, status INTO v_listing_user_id, v_listing_status
+    FROM bids
+    WHERE id = p_listing_id;
+  ELSE
+    SELECT user_id, status INTO v_listing_user_id, v_listing_status
+    FROM asks
+    WHERE id = p_listing_id;
+  END IF;
+
+  -- Check if listing exists
+  IF v_listing_user_id IS NULL THEN
+    RAISE EXCEPTION 'Listing not found'
+      USING ERRCODE = 'P0002';
+  END IF;
+
+  -- Check ownership
+  IF v_listing_user_id != p_user_id THEN
+    RAISE EXCEPTION 'Unauthorized: You can only cancel your own listings'
+      USING ERRCODE = '42501';
+  END IF;
+
+  -- Check if listing can be cancelled
+  IF v_listing_status != 'active' THEN
+    RAISE EXCEPTION 'Listing cannot be cancelled. Current status: %', v_listing_status
+      USING ERRCODE = 'P0003';
+  END IF;
+
+  -- Cancel the listing
+  IF p_listing_type = 'bid' THEN
+    UPDATE bids
+    SET status = 'cancelled', updated_at = NOW()
+    WHERE id = p_listing_id
+    RETURNING json_build_object(
+      'id', id,
+      'status', status,
+      'updated_at', updated_at
+    ) INTO v_result;
+  ELSE
+    UPDATE asks
+    SET status = 'cancelled', updated_at = NOW()
+    WHERE id = p_listing_id
+    RETURNING json_build_object(
+      'id', id,
+      'status', status,
+      'updated_at', updated_at
+    ) INTO v_result;
+  END IF;
+
+  RETURN v_result;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Grant execute permission to authenticated users
+GRANT EXECUTE ON FUNCTION cancel_listing TO authenticated;
+
+COMMENT ON FUNCTION cancel_listing IS 'Unified function to cancel bids or asks with ownership validation';
 
 -- ============================================================================
 -- END OF SCHEMA

@@ -15,8 +15,6 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const [imageError, setImageError] = useState(false)
 
-  console.log(product)
-
   return (
     <Link href={`/products/${product.slug}`} className="group">
       <div className="bg-white rounded border border-neutral-200 overflow-hidden transition-all hover:shadow hover:border-primary-300">

@@ -1,74 +1,71 @@
 # Verified AR
 
-Argentine sneaker marketplace with bid/ask matching, local authentication, and Mercado Pago integration.
+Argentine sneaker marketplace with bid/ask matching engine.
+
+---
 
 ## Quick Start
 
 ```bash
-# 1. Configure environment
+# 1. Setup environment
 cp env.template .env
-# Edit .env with your Supabase credentials
+# Edit .env with Supabase credentials
 
-# 2. Start with Docker (handles all dependencies)
-docker-compose up --build
+# 2. Install dependencies
+pnpm install
+
+# 3. Start Docker
+docker-compose up -d --build
+
+# 4. Seed demo data (3 featured users + images)
+docker exec verified-backend-1 bash /app/root-scripts/docker-demo-setup.sh
 ```
 
-**Access**: http://localhost:3000
+**Access:** http://localhost:3000
 
-### Local Development (without Docker)
+---
+
+## Documentation
+
+- **[DEMO.md](./docs/DEMO.md)** - Demo setup & featured users
+- **[roadmap-mvp.md](./docs/roadmap-mvp.md)** - Development roadmap
+- **[MATCHING.md](./docs/MATCHING.md)** - Matching engine details
+- **[architecture.md](./docs/architecture.md)** - System architecture
+
+---
+
+## Testing
 
 ```bash
-pnpm install && cd frontend && pnpm install && cd ../backend && pnpm install
-cd frontend && pnpm dev  # Terminal 1
-cd backend && pnpm dev   # Terminal 2
+# Integration tests
+pnpm test:integration
+
+# Validation tests
+pnpm test:matching
+pnpm test:pricing
 ```
 
-## Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| Frontend | Next.js 15, React 19, Tailwind CSS, TypeScript |
-| Backend | Next.js API Routes, Zod validation |
-| Database | PostgreSQL (Supabase) with RLS |
-| Auth | Supabase Auth |
-| Payments | Mercado Pago |
+---
 
 ## Project Structure
 
 ```
-├── frontend/       # Next.js frontend (port 3000)
-├── backend/        # Next.js API backend (port 4000)
-├── docs/           # All documentation
-└── scripts/        # Seed and validation scripts
+/frontend          # Next.js 15 app
+/backend           # API routes & services
+/scripts
+  /demo            # Demo data seeding
+  /validation      # Test scripts
+/docs              # Documentation
 ```
 
-## Documentation
+---
 
-| Document | Description |
-|----------|-------------|
-| [`docs/SETUP.md`](./docs/SETUP.md) | Complete setup guide |
-| [`docs/roadmap-mvp.md`](./docs/roadmap-mvp.md) | Current MVP tasks |
-| [`docs/architecture.md`](./docs/architecture.md) | System design |
-| [`docs/MATCHING.md`](./docs/MATCHING.md) | Bid/Ask matching engine |
-| [`docs/schema.sql`](./docs/schema.sql) | Database schema |
-| [`docs/DOCKER-TESTING.md`](./docs/DOCKER-TESTING.md) | Testing guide |
+## Demo Users
 
-## Commands
+**Password:** `Demo1234!`
 
-```bash
-pnpm dev              # Start all services
-pnpm seed             # Seed products
-pnpm test:db          # Test database connection
-pnpm test:env         # Start test environment
-```
+- `mateo.collector@demo.com` - Active buyer (10 saved, 3 purchases, 5 bids)
+- `sofia.reseller@demo.com` - Power seller (2 sales, 6 listings)
+- `lucas.casual@demo.com` - Casual buyer (4 saved, 2 bids)
 
-## Status
-
-**Current Phase**: Week 7-8 (Stability & Validation)  
-**Progress**: 60% Complete
-
-See [`docs/PROJECT-STATUS.md`](./docs/PROJECT-STATUS.md) for details.
-
-## License
-
-Private - All rights reserved
+See [DEMO.md](./docs/DEMO.md) for full guide.

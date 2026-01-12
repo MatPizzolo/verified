@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+import { apiPost } from "@/lib/api"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -51,14 +52,9 @@ export default function RegisterPage() {
     setFieldErrors({})
 
     try {
-      const response = await fetch('http://localhost:4000/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const response = await apiPost('/api/auth/register', {
         ...formData,
         accept_terms: acceptTerms,
-      }),
-        credentials: 'include',
       })
 
       const result = await response.json()

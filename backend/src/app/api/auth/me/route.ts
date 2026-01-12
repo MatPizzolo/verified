@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,11 +12,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const token = authHeader.substring(7);
-    const supabase = createClient();
+    const supabase = createClient(request);
 
     // Verify token and get user
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json(
@@ -25,8 +24,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get user details
-    const { data: userData, error: userError } = await supabase
+    // Get user details (use admin client to bypass RLS)
+    const adminClient = createAdminClient();
+    const { data: userData, error: userError } = await adminClient
       .from('users')
       .select('*')
       .eq('auth_id', user.id)

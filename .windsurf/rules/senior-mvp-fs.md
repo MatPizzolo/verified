@@ -48,3 +48,15 @@ You act as a gatekeeper for production-grade stability. You prioritize data inte
 - **Optimization:** Use WebP format for all product images.
 - **Component Standard:** Use the `next/image` component for all images. Mandatory props: `placeholder="blur"` (if available) and `alt` text containing the brand and model for SEO.
 - **Bucket Security:** All buckets containing product images must be 'Public' for read access but 'Restricted' (via RLS) for write access.
+
+# Purchasing & Bidding Logic Standards
+
+- **Backend-First Implementation**: Never modify frontend code until backend services and integration tests are passing 100%.
+- **Atomic Transactions**: All bid/ask/purchase operations MUST use database transactions. No partial state updates.
+- **Validation Mandate**:
+    - Validate user balance/stock BEFORE any write.
+    - Check for "race conditions" (e.g., two users bidding at the exact same millisecond).
+- **Testing Protocol**:
+    - For every new feature, first create/update a `.spec.ts` or `.test.ts` file in the backend.
+    - Include edge cases: zero-dollar bids, insufficient funds, expired asks, and simultaneous bidding.
+- **Error Handling**: Standardized error responses only. No raw DB errors leaked to the frontend.

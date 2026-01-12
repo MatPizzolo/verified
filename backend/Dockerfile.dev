@@ -14,6 +14,9 @@ COPY package.json pnpm-lock.yaml* ./
 # Install dependencies (including dev dependencies for testing)
 RUN pnpm install
 
+# Install dependencies needed for seed scripts in the app directory
+RUN pnpm add dotenv @supabase/supabase-js tsx typescript
+
 # Copy wait-for-it script
 COPY scripts/wait-for-it.sh /app/scripts/wait-for-it.sh
 RUN chmod +x /app/scripts/wait-for-it.sh

@@ -16,10 +16,14 @@ export default async function MyAsksPage() {
     redirect('/login');
   }
 
+  // Get session token
+  const { data: { session } } = await supabase.auth.getSession();
+  
   // Fetch user's asks
   const response = await fetch('http://localhost:4000/api/asks?status=all', {
     headers: {
-      'Cookie': `sb-access-token=${user.id}`, // Simplified - in production use proper session
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session?.access_token}`,
     },
     cache: 'no-store',
   });

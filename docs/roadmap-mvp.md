@@ -3,10 +3,8 @@
 > **⚠️ This is the CORRECTED roadmap with verified task completion status**  
 > **Refer to [roadmap-v2.md](./roadmap-v2.md) for long-term features**
 
-**Timeline**: 8-10 weeks to functional launch  
-**Goal**: Launch a working Buy/Sell sneaker platform in Argentina with core marketplace features
-
-**Last Audit**: January 7, 2026
+**Timeline**: 12 weeks  
+**Current**: Week 7-8 (Stability & Validation)
 
 ---
 
@@ -221,19 +219,46 @@
   - Evidence: `/backend/src/lib/market-engine.test.ts:11-25`
 - [x] Write unit tests for ARS/USD conversion with rate versioning
   - Evidence: `/backend/src/lib/market-engine.test.ts:27-63`
-- [ ] **USER ACTION**: Install Vitest deps, then run `cd backend && pnpm test`
+- [x] **USER ACTION**: Install Vitest deps, then run `cd backend && pnpm test`
 
 ### Integration Tests (Supabase)
-- [ ] Set up test Supabase project or use local Supabase
-- [ ] Create `backend/tests/integration/` folder
-  - **PARTIAL**: `/backend/tests/setup.ts` exists, but no integration tests
-- [ ] Write test: Bid insertion triggers matching function
-- [ ] Write test: Ask insertion triggers matching function
-- [ ] Write test: Successful match updates both bid and ask status
-- [ ] Write test: Transaction created with correct exchange rate
+- [x] Set up test Supabase project or use local Supabase
+  - Evidence: Using production Supabase with test users
+- [x] Create `backend/tests/integration/` folder
+  - Evidence: `/backend/tests/integration/matching.test.ts` (854 lines, 25+ test cases)
+- [x] Write test: Bid insertion triggers matching function
+  - Evidence: `/backend/tests/integration/matching.test.ts:68-135`
+- [x] Write test: Ask insertion triggers matching function
+  - Evidence: `/backend/tests/integration/matching.test.ts:180-231`
+- [x] Write test: Successful match updates both bid and ask status
+  - Evidence: `/backend/tests/integration/matching.test.ts:68-135`
+- [x] Write test: Transaction created with correct exchange rate
+  - Evidence: `/backend/tests/integration/matching.test.ts:234-280`
+- [x] Write test: Market stats update after match
+  - Evidence: `/backend/tests/integration/matching.test.ts:283-329`
+- [x] Write test: Same user cannot match own bid/ask
+  - Evidence: `/backend/tests/integration/matching.test.ts:333-381`
+- [x] Write test: Expired listings do not match
+  - Evidence: `/backend/tests/integration/matching.test.ts:383-422`
+- [x] Write test: Cancelled listings do not match
+  - Evidence: `/backend/tests/integration/matching.test.ts:424-463`
+- [x] Write test: Multiple asks - matches lowest price
+  - Evidence: `/backend/tests/integration/matching.test.ts:465-528`
+- [x] Write test: Multiple bids - matches highest price
+  - Evidence: `/backend/tests/integration/matching.test.ts:530-603`
+- [x] Write test: Exact price match handling
+  - Evidence: `/backend/tests/integration/matching.test.ts:605-650`
+- [x] Write test: Exchange rate preservation in transactions
+  - Evidence: `/backend/tests/integration/matching.test.ts:652-698`
+- [x] Write test: Idempotency - no duplicate transactions
+  - Evidence: `/backend/tests/integration/matching.test.ts:700-742`
+- [x] Write test: Integer price validation (no decimals)
+  - Evidence: `/backend/tests/integration/matching.test.ts:744-787`
+- [x] Write test: Concurrent matching scenarios
+  - Evidence: `/backend/tests/integration/matching.test.ts:790-851`
 - [ ] Write test: RLS policies prevent unauthorized access
-- [ ] Write test: Market stats update after match
-- [ ] **USER ACTION**: Run integration tests
+  - **DEFERRED**: Will be implemented with security hardening
+- [ ] **USER ACTION**: Run integration tests with `pnpm test:integration`
 
 ### Validation Scripts
 - [x] Create `scripts/seed-test-market.ts` to populate test data
@@ -244,14 +269,32 @@
   - Evidence: `/scripts/validate-pricing.ts`
 - [ ] Create `scripts/validate-rls.ts` to verify Row Level Security
   - **MISSING**: Not implemented
-- [x] Add npm scripts: `test:market`, `test:matching`, `test:pricing`
-  - Evidence: Root `/package.json:15-17`
+- [x] Add npm scripts: `test:market`, `test:matching`, `test:pricing`, `test:integration`
+  - Evidence: Root `/package.json:15-18`
 - [x] Document matching logic and testing
   - Evidence: `/docs/MATCHING.md` (comprehensive matching documentation)
 - [ ] **USER ACTION**: Run validation scripts and verify output
 
+### MVP Demo Preparation
+- [x] Create comprehensive demo data seed script
+  - Evidence: `/scripts/seed-mvp-demo.ts` (280 lines)
+- [x] Generate realistic users (buyers and sellers)
+  - Evidence: 8 demo users with Argentine names and locations
+- [x] Create diverse bids and asks across products
+  - Evidence: Multiple price points per product variant (15-20 each)
+- [x] Add matching scenarios for demonstration
+  - Evidence: Bid/Ask pairs that should match automatically
+- [x] Add npm scripts: `seed:demo`, `demo:setup`
+  - Evidence: Root `/package.json:20-21`
+- [x] Create comprehensive demo documentation
+  - Evidence: `/docs/MVP-DEMO.md` with setup guide, credentials, and testing instructions
+- [ ] **USER ACTION**: Run `pnpm demo:setup` to populate marketplace
+- [ ] **USER ACTION**: Verify demo data in UI at http://localhost:3000
+- [ ] **USER ACTION**: Test matching engine with demo users
+
 ### E2E Tests (Critical Path)
 - [ ] Install Playwright for E2E testing
+  - **DEFERRED**: Focus on MVP demo first
 - [ ] Write E2E test: User registration and login
 - [ ] Write E2E test: Search → Product Detail → Place Bid
 - [ ] Write E2E test: Search → Product Detail → Place Ask

@@ -27,9 +27,9 @@ CREATE OR REPLACE FUNCTION attempt_match_bid()
 RETURNS TRIGGER AS $$
 DECLARE
   v_matching_ask_id UUID;
-  v_ask_price_ars DECIMAL;
-  v_ask_price_usd DECIMAL;
-  v_ask_usd_ars_rate DECIMAL;
+  v_ask_price_ars BIGINT;
+  v_ask_price_usd BIGINT;
+  v_ask_usd_ars_rate DECIMAL(10, 4);
   v_seller_id UUID;
   v_transaction_id UUID;
 BEGIN
@@ -141,9 +141,9 @@ CREATE OR REPLACE FUNCTION attempt_match_ask()
 RETURNS TRIGGER AS $$
 DECLARE
   v_matching_bid_id UUID;
-  v_bid_price_ars DECIMAL;
-  v_bid_price_usd DECIMAL;
-  v_bid_usd_ars_rate DECIMAL;
+  v_bid_price_ars BIGINT;
+  v_bid_price_usd BIGINT;
+  v_bid_usd_ars_rate DECIMAL(10, 4);
   v_buyer_id UUID;
   v_transaction_id UUID;
 BEGIN

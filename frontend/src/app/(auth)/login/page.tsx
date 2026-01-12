@@ -8,6 +8,7 @@ import { AuthLayout } from "@/components/auth/auth-layout"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { apiPost } from "@/lib/api"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -36,12 +37,7 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const response = await fetch('http://localhost:4000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-        credentials: 'include',
-      })
+      const response = await apiPost('/api/auth/login', formData)
 
       const result = await response.json()
 

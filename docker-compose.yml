@@ -12,8 +12,8 @@ services:
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
       - NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL:-http://localhost:3000}
-      - WATCHPACK_POLLING=true
-      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=false
+      - CHOKIDAR_USEPOLLING=false
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -22,9 +22,16 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          memory: 512M
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
-      interval: 30s
+      interval: 60s
       timeout: 10s
       retries: 3
       start_period: 40s
@@ -39,17 +46,25 @@ services:
       - "4000:4000"
     environment:
       - NODE_ENV=development
-      - WATCHPACK_POLLING=true
-      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=false
+      - CHOKIDAR_USEPOLLING=false
       - ALLOWED_ORIGIN=${ALLOWED_ORIGIN:-http://localhost:3000}
     volumes:
       - ./backend:/app
       - /app/node_modules
+      - ./scripts:/app/root-scripts:ro
     networks:
       - verified-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 384M
+        reservations:
+          memory: 192M
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:4000/api/health"]
-      interval: 30s
+      interval: 60s
       timeout: 10s
       retries: 3
       start_period: 40s
@@ -65,9 +80,16 @@ services:
     depends_on:
       - frontend
       - backend
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 64M
+        reservations:
+          memory: 32M
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost/health"]
-      interval: 30s
+      interval: 60s
       timeout: 10s
       retries: 3
 

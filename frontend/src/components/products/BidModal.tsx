@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { apiPost } from '@/lib/api';
 
 interface BidModalProps {
   variantId: string;
@@ -18,10 +19,12 @@ export function BidModal({ variantId, productName, size, lowestAsk, onClose }: B
   const [price, setPrice] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess(false);
     setLoading(true);
 
     try {
@@ -33,27 +36,28 @@ export function BidModal({ variantId, productName, size, lowestAsk, onClose }: B
         return;
       }
 
-      const response = await fetch('http://localhost:4000/api/bids', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          variant_id: variantId,
-          price_ars: priceNum,
-        }),
+      // Convert pesos to centavos (multiply by 100 and round to integer)
+      // This ensures we send integers to the backend as required
+      const priceInCentavos = Math.round(priceNum * 100);
+
+      const response = await apiPost('/api/bids', {
+        variant_id: variantId,
+        price_ars: priceInCentavos,
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to place bid');
+        const errorMsg = data.details?.price_ars?.[0] || data.error || 'Failed to place bid';
+        throw new Error(errorMsg);
       }
 
-      // Success - redirect to my bids page
-      router.push('/my-bids');
-      onClose();
+      // Success - show feedback then redirect
+      setSuccess(true);
+      setTimeout(() => {
+        router.push('/my-bids');
+        onClose();
+      }, 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to place bid');
     } finally {
@@ -83,10 +87,11 @@ export function BidModal({ variantId, productName, size, lowestAsk, onClose }: B
                 id="price"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                placeholder="0.00"
+                placeholder="100000.00"
                 step="0.01"
-                min="0"
+                min="0.01"
                 required
+                disabled={loading || success}
                 className="w-full pl-8 pr-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
@@ -100,6 +105,12 @@ export function BidModal({ variantId, productName, size, lowestAsk, onClose }: B
           {error && (
             <div className="mb-4 p-3 bg-danger-50 border border-danger-200 rounded-lg">
               <p className="text-sm text-danger-700">{error}</p>
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-4 p-3 bg-primary-50 border border-primary-200 rounded-lg">
+              <p className="text-sm text-primary-700">✓ Bid placed successfully! Redirecting...</p>
             </div>
           )}
 
@@ -118,7 +129,7 @@ export function BidModal({ variantId, productName, size, lowestAsk, onClose }: B
               variant="outline"
               fullWidth
               onClick={onClose}
-              disabled={loading}
+              disabled={loading || success}
             >
               Cancel
             </Button>
@@ -126,9 +137,9 @@ export function BidModal({ variantId, productName, size, lowestAsk, onClose }: B
               type="submit"
               variant="primary"
               fullWidth
-              disabled={loading}
+              disabled={loading || success}
             >
-              {loading ? 'Placing Bid...' : 'Place Bid'}
+              {loading ? 'Placing Bid...' : success ? 'Success!' : 'Place Bid'}
             </Button>
           </div>
         </form>

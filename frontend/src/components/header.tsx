@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Search, Menu, X, User, ShoppingBag, ChevronDown, LogOut } from "lucide-react"
+import { Search, Menu, X, User, ShoppingBag, ChevronDown, LogOut, Heart } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/input"
 import { useState, useEffect } from "react"
@@ -42,7 +42,7 @@ export function Header() {
           </Link>
 
           {/* Desktop Search */}
-          <div className="hidden md:flex flex-1 max-w-md mx-8">
+          <div className="hidden md:flex flex-1 max-w-md mx-6">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
               <Input type="search" placeholder="Buscar zapatillas..." className="pl-10 bg-neutral-100 border-0" />
@@ -50,18 +50,18 @@ export function Header() {
           </div>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-6 mr-2">
             {user ? (
               <>
                 <Link
                   href="/products"
-                  className="text-sm font-medium text-neutral-500 hover:text-neutral-900 transition-colors"
+                  className="text-sm font-medium text-neutral-900 hover:text-primary-600 transition-colors"
                 >
                   Productos
                 </Link>
                 <Link
                   href="/brands"
-                  className="text-sm font-medium text-neutral-500 hover:text-neutral-900 transition-colors"
+                  className="text-sm font-medium text-neutral-900 hover:text-primary-600 transition-colors"
                 >
                   Marcas
                 </Link>
@@ -70,13 +70,13 @@ export function Header() {
               <>
                 <Link
                   href="/products"
-                  className="text-sm font-medium text-neutral-500 hover:text-neutral-900 transition-colors"
+                  className="text-sm font-medium text-neutral-900 hover:text-primary-600 transition-colors"
                 >
                   Explorar
                 </Link>
                 <Link
                   href="/how-it-works"
-                  className="text-sm font-medium text-neutral-500 hover:text-neutral-900 transition-colors"
+                  className="text-sm font-medium text-neutral-900 hover:text-primary-600 transition-colors"
                 >
                   Cómo funciona
                 </Link>
@@ -96,6 +96,12 @@ export function Header() {
                     Vender
                   </Link>
                 </Button>
+                <button
+                  className="p-2 rounded-lg hover:bg-neutral-100 transition-colors"
+                  aria-label="Saved items"
+                >
+                  <Heart className="w-5 h-5 text-neutral-600 hover:text-primary-600 transition-colors" />
+                </button>
                 <div className="relative">
                   <button
                     onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
@@ -130,6 +136,13 @@ export function Header() {
                         onClick={() => setProfileDropdownOpen(false)}
                       >
                         Dashboard
+                      </Link>
+                      <Link
+                        href="/saved"
+                        className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+                        onClick={() => setProfileDropdownOpen(false)}
+                      >
+                        Guardados
                       </Link>
                       <hr className="my-2 border-neutral-200" />
                       <button

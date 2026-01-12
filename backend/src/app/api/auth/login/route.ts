@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -31,8 +31,9 @@ export async function POST(request: NextRequest) {
       throw new Error('Login failed');
     }
 
-    // Get user details
-    const { data: userData, error: userError } = await supabase
+    // Get user details (use admin client to bypass RLS)
+    const adminClient = createAdminClient();
+    const { data: userData, error: userError } = await adminClient
       .from('users')
       .select('*')
       .eq('auth_id', authData.user.id)

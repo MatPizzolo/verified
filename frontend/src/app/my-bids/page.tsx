@@ -16,10 +16,14 @@ export default async function MyBidsPage() {
     redirect('/login');
   }
 
+  // Get session token
+  const { data: { session } } = await supabase.auth.getSession();
+  
   // Fetch user's bids
   const response = await fetch('http://localhost:4000/api/bids?status=all', {
     headers: {
-      'Cookie': `sb-access-token=${user.id}`, // Simplified - in production use proper session
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session?.access_token}`,
     },
     cache: 'no-store',
   });

@@ -4,15 +4,13 @@ import { z } from 'zod';
 
 const bidSchema = z.object({
   variant_id: z.string().uuid('Invalid variant ID'),
-  price_ars: z.number().positive('Price must be greater than 0'),
+  price_ars: z.number().int('Price must be an integer (centavos)').positive('Price must be greater than 0'),
   expires_at: z.string().datetime().optional(),
 });
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-
-    // Get user from session
+    const supabase = createClient(request);
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
@@ -63,8 +61,12 @@ export async function POST(request: NextRequest) {
       .limit(1)
       .single();
 
-    const usdArsRate = exchangeRate?.usd_to_ars || 1350; // Default fallback
-    const priceUsd = price_ars / usdArsRate;
+    // Exchange rate is stored as rate * 10000 (e.g., 1350.50 = 13505000)
+    const usdArsRate = exchangeRate?.usd_to_ars ? Math.round(exchangeRate.usd_to_ars * 10000) : 13505000;
+    
+    // Convert ARS centavos to USD cents using integer math to avoid rounding errors
+    // Formula: (arsCentavos * 10000) / rate
+    const priceUsd = Math.round((price_ars * 10000) / usdArsRate);
 
     // Set expiration (default 30 days from now)
     const expiresAt = expires_at || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -124,9 +126,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
-
-    // Get user from session
+    const supabase = createClient(request);
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {

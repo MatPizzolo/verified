@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { StatusBadge } from "@/components/status-badge"
 import { formatARS, formatDate } from "@/lib/format"
+import { apiGet } from "@/lib/api"
 import type { Bid, Ask, Transaction } from "@/lib/types"
 
 type Tab = "bids" | "asks" | "transactions"
@@ -24,9 +25,7 @@ export default function DashboardPage() {
 
       try {
         // Fetch bids
-        const bidsRes = await fetch('http://localhost:4000/api/bids?status=all', {
-          credentials: 'include',
-        })
+        const bidsRes = await apiGet('/api/bids?status=all')
         if (bidsRes.ok) {
           const bidsData = await bidsRes.json()
           setBids(bidsData.bids?.map((b: any) => ({
@@ -42,9 +41,7 @@ export default function DashboardPage() {
         }
 
         // Fetch asks
-        const asksRes = await fetch('http://localhost:4000/api/asks?status=all', {
-          credentials: 'include',
-        })
+        const asksRes = await apiGet('/api/asks?status=all')
         if (asksRes.ok) {
           const asksData = await asksRes.json()
           setAsks(asksData.asks?.map((a: any) => ({

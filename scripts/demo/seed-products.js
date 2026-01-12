@@ -6,6 +6,12 @@
  */
 
 const { createClient } = require('@supabase/supabase-js');
+const { 
+  processProductImage, 
+  ensureBucketExists, 
+  ensureTempDir, 
+  cleanupTempDir 
+} = require('./upload-product-images');
 require('dotenv').config();
 
 const supabase = createClient(
@@ -86,6 +92,12 @@ async function seedDatabase() {
   console.log('🌱 Starting database seeding...\n');
 
   try {
+    // 0. Setup storage and temp directory
+    console.log('📦 Setting up image storage...');
+    await ensureBucketExists();
+    ensureTempDir();
+    console.log('✓ Storage ready\n');
+
     // 1. Seed Brands
     console.log('📦 Seeding brands...');
     const { data: brands, error: brandsError } = await supabase
@@ -102,29 +114,40 @@ async function seedDatabase() {
       brandMap[brand.slug] = brand.id;
     });
 
-    // 2. Seed Products
-    console.log('👟 Seeding products...');
-    const productsToInsert = PRODUCTS.map(p => ({
-      brand_id: brandMap[p.brand_slug],
-      name: p.name,
-      slug: p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      colorway: p.colorway,
-      sku: p.sku,
-      retail_price_usd: p.retail_price_usd,
-      gender: p.gender,
-      image_url: p.image_url,
-      description: `${p.name} in ${p.colorway} colorway. Original retail price: $${p.retail_price_usd}.`,
-      featured: Math.random() > 0.7, // 30% chance of being featured
-      active: true
-    }));
+    // 2. Upload Product Images and Seed Products
+    console.log('🖼️  Uploading product images to Supabase Storage...');
+    const productsWithImages = [];
+    
+    for (const p of PRODUCTS) {
+      // Upload image to storage
+      const uploadedImageUrl = await processProductImage(p, p.image_url);
+      
+      productsWithImages.push({
+        brand_id: brandMap[p.brand_slug],
+        name: p.name,
+        slug: `${p.name}-${p.colorway}`.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        colorway: p.colorway,
+        sku: p.sku,
+        retail_price_usd: p.retail_price_usd,
+        gender: p.gender,
+        image_url: uploadedImageUrl || p.image_url, // Fallback to original if upload fails
+        description: `${p.name} in ${p.colorway} colorway. Original retail price: $${p.retail_price_usd}.`,
+        featured: Math.random() > 0.7,
+        active: true
+      });
+    }
 
+    console.log('\n👟 Seeding products with uploaded images...');
     const { data: products, error: productsError } = await supabase
       .from('products')
-      .upsert(productsToInsert, { onConflict: 'slug' })
+      .upsert(productsWithImages, { onConflict: 'slug' })
       .select();
 
     if (productsError) throw productsError;
     console.log(`✓ Seeded ${products.length} products\n`);
+
+    // Clean up temp directory
+    cleanupTempDir();
 
     // 3. Seed Variants (sizes)
     console.log('📏 Seeding variants (sizes)...');
@@ -199,10 +222,6 @@ async function seedDatabase() {
     console.log(`  - ${products.length} products`);
     console.log(`  - ${variants.length} variants (sizes)`);
     console.log(`  - ${marketStats.length} market stats initialized`);
-    console.log('\nNext steps:');
-    console.log('  1. Visit http://localhost:3000/products');
-    console.log('  2. Browse the product catalog');
-    console.log('  3. Search for products\n');
 
   } catch (error) {
     console.error('\n❌ Seeding failed:', error.message);
@@ -212,4 +231,9 @@ async function seedDatabase() {
   }
 }
 
-seedDatabase();
+seedDatabase().then(() => {
+  process.exit(0);
+}).catch((error) => {
+  console.error('Fatal error:', error);
+  process.exit(1);
+});

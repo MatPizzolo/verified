@@ -1,10 +1,8 @@
-import Image from "next/image"
-
 const brands = [
-  { name: "Nike", logo: "/nike-logo-black.jpg" },
-  { name: "Jordan", logo: "/jordan-jumpman-logo-black.jpg" },
-  { name: "Adidas", logo: "/adidas-logo-black.jpg" },
-  { name: "New Balance", logo: "/new-balance-logo-black.jpg" },
+  { name: "Nike" },
+  { name: "Jordan" },
+  { name: "Adidas" },
+  { name: "New Balance" },
 ]
 
 export function BrandLogos() {
@@ -15,13 +13,9 @@ export function BrandLogos() {
         <div className="flex items-center justify-center gap-8 md:gap-16 flex-wrap">
           {brands.map((brand) => (
             <div key={brand.name} className="opacity-60 hover:opacity-100 transition-opacity">
-              <Image
-                src={brand.logo || "/placeholder.svg"}
-                alt={brand.name}
-                width={100}
-                height={40}
-                className="h-8 md:h-10 w-auto object-contain"
-              />
+              <span className="text-2xl md:text-3xl font-bold text-neutral-800">
+                {brand.name}
+              </span>
             </div>
           ))}
         </div>
